@@ -11,6 +11,8 @@ object MyModule {
   val magic :Int = 42
   var result :Option[Int] = None
 
+  def square(n: Int) = n*n
+
   def main(args: Array[String]): Unit = {
     assert (magic - 84 == magic.-(84))
     println (formatAbs (magic-100))

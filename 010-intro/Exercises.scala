@@ -1,7 +1,7 @@
 // Advanced Programming, Exercises by A. Wąsowski, IT University of Copenhagen
 //
-// AUTHOR1:
-// AUTHOR2:
+// AUTHOR1: ecly@itu.dk
+// AUTHOR2: miev@itu.dk
 //
 // Write ITU email addresses of both group members that contributed to
 // the solution of the exercise (in lexicographic order).
@@ -37,12 +37,22 @@ object Exercises extends App {
 
   // Exercise 3
 
-  // def fib (n: Int) : Int = ...
-
+  def fib (n: Int) : Int = {
+    @annotation.tailrec
+    def f (n: Int, a: Int, b: Int) : Int = n match {
+      case 1 => a
+      case n => f(n-1, b, a+b)
+    }
+    f(n, 0, 1)
+  }
   // some tests (uncomment, add more):
 
-  // assert (fib (1) == 0)
-  // ...
+  assert (fib (1) == 0)
+  assert (fib (2) == 1)
+  assert (fib (3) == 1)
+  assert (fib (4) == 2)
+  assert (fib (5) == 3)
+  assert (fib (6) == 5)
 
   // Exercise 4
 
@@ -63,46 +73,58 @@ object Exercises extends App {
 
   // computes the total of expenses in cents
 
-  // def total (expenses: Array[Expense]) :Int = ...
+  def total (expenses: Array[Expense]) : Int = {
+    @annotation.tailrec
+    def f (seq: List[Expense], acc: Int) : Int = seq match {
+      case v::tail => f(tail, v.price+acc)
+      case Nil => acc
+    }
+    f(expenses.toList, 0)
+  }
 
   val testcase1 = Array[Expense](
     new Expense("Coffee", 450),
     new Expense("Cake", 350) )
-
-  // assert (total (testcase1) == 800) // uncomment
-
-  // Add one or two more tests
-  // ...
-
+  val testcase2 = Array[Expense]()
+  assert (total (testcase1) == 800)
+  assert (total (testcase2) == 0)
 
   // Exercise 5
 
-  // def isSorted[A] (as: Array[A], ordered: (A,A) =>  Boolean) :Boolean = ...
+  def isSorted[A] (as: Array[A], ordered: (A,A) =>  Boolean) :Boolean = {
+    @annotation.tailrec
+    def f(list: List[A], ordered: (A, A) => Boolean) : Boolean = list match {
+      case a::b::tail => ordered(a, b) && f(b::tail, ordered)
+      case _ => true
+    }
+    f(as.toList, ordered)
+  }
 
   // some tests (uncomment)
 
-  // assert ( isSorted (Array(1,2,3,4,5,6), (a: Int, b: Int)=> a <= b))
-  // assert (!isSorted (Array(6,2,3,4,5,6), (a: Int, b: Int)=> a <= b))
-  // assert (!isSorted (Array(1,2,3,4,5,1), (a: Int, b: Int)=> a <= b))
-
-  // add two tests with another type, for example an Array[String]
+  assert ( isSorted (Array(1,2,3,4,5,6), (a: Int, b: Int)=> a <= b))
+  assert (!isSorted (Array(6,2,3,4,5,6), (a: Int, b: Int)=> a <= b))
+  assert (!isSorted (Array(1,2,3,4,5,1), (a: Int, b: Int)=> a <= b))
+  assert (isSorted (Array("emil", "michael"), (a: String, b: String)=> a <= b))
+  assert (isSorted (Array(), (a: String, b: String)=> a <= b))
 
   // Exercise 6
 
-  // def curry[A,B,C] (f: (A,B)=>C) : A => (B => C) = ...
-  //
+  def curry[A,B,C] (f: (A,B)=>C) : A => (B => C) = (x) => (y) => f(x, y)
+
   // test if it type checks by currying isSorted automatically
 
-  // def isSorted1[A]: Array[A] => ((A,A)=>Boolean) => Boolean = ...
+  def isSorted1[A]: Array[A] => ((A,A)=>Boolean) => Boolean = curry (isSorted _)
 
   // Exercise 7
 
-  // def uncurry[A,B,C] (f: A => B => C) : (A,B) => C =
+  def uncurry[A,B,C] (f: A => B => C) : (A,B) => C = (x, y) => f (x) (y)
 
-  // def isSorted2[A] : (Array[A], (A,A) => Boolean) => Boolean = ...
+  def isSorted2[A] : (Array[A], (A,A) => Boolean) => Boolean = uncurry (curry (isSorted _))
+  assert (isSorted2 (Array(), (a: String, b: String)=> a <= b))
 
   // Exercise 8
 
-  // def compose[A,B,C] (f: B => C, g: A => B) : A => C = ...
-
+  def compose[A,B,C] (f: B => C, g: A => B) : A => C = x => f(g(x))
+  assert (compose ((x: Int) => x+2, (x: Int) => x*2) (5) == 12)
 }
