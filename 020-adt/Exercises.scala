@@ -1,8 +1,8 @@
 // Advanced Programming 2018,
 // A. Wąsowski, Z.Fu. IT University of Copenhagen
 //
-// AUTHOR1:
-// AUTHOR2:
+// AUTHOR1: Emil Lynegaard ecly@itu.dk
+// AUTHOR2: Michael Vesterli miev@itu.dk
 //
 // Write names and ITU email addresses of both group members that contributed to
 // the solution of the exercise (in alphabetical order by family name).
@@ -50,19 +50,35 @@ object List {
 
   // Exercise 2
 
-  // def tail[A] (as: List[A]) :List[A] = ...
+  def tail[A] (as: List[A]) :List[A] = as match {
+    case Nil => Nil
+    case Cons(_, tail) => tail
+  }
+  // Some possibilities would be to return nil or throw an exception.
 
   // Exercise 3
 
-  // def drop[A] (l: List[A], n: Int) : List[A] = ...
+  def drop[A] (l: List[A], n: Int) : List[A] = (l, n) match {
+    case (l, 0) => l
+    case (Cons(_, tail), n) => drop(tail, n-1)
+    case (Nil, _) => Nil
+  }
 
   // Exercise 4
 
-  // def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ...
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Cons(v, tail) => if (f(v)) { dropWhile(tail, f) } else { Cons(v, tail) }
+    case Nil => Nil
+  }
 
   // Exercise 5
 
-  // def init[A](l: List[A]): List[A] = ...
+  def init[A](l: List[A]): List[A] = l match {
+    case Cons(v, Nil) => Nil
+    case Cons(v, tail) => Cons(v, init(tail))
+    case Nil => Nil
+  }
+  // It is linear time as the list must be reconstructed. It is therefore also linear space.
 
   // Exercise 6
 
@@ -71,26 +87,29 @@ object List {
     case Cons (x,xs) => f (x, foldRight (xs,z) (f))
   }
 
-  // def length[A] (as: List[A]): Int = ...
+  def length[A] (as: List[A]): Int = foldRight (as, 0) ((_, acc) => acc+1)
 
   // Exercise 7
 
-  // def foldLeft[A,B] (as: List[A], z: B) (f: (B, A) => B) : B = ...
+  def foldLeft[A,B] (as: List[A], z: B) (f: (B, A) => B) : B = as match {
+    case Nil => z
+    case Cons(h, tail) => foldLeft (tail, f(z, h)) (f)
+  }
 
   // Exercise 8
 
-  // def product (as :List[Int]) : Int = ...
-  // def length1 (as :List[Int]) : Int = ...
+  def product (as :List[Int]) : Int = foldLeft (as, 1) (_*_)
+  def length1 (as :List[Int]) : Int = foldLeft (as, 0) ((acc, _) => 1+acc)
 
   // Exercise 9
 
-  // def reverse[A] (as :List[A]) :List[A] = ...
+  def reverse[A] (as :List[A]) :List[A] = foldLeft (as, (Nil : List[A])) ((acc, v) => Cons(v, acc))
 
   // Exercise 10
 
-  // def foldRight1[A,B] (as: List[A], z: B) (f: (A, B) => B) : B = ...
+  def foldRight1[A,B] (as: List[A], z: B) (f: (A, B) => B) : B =
+    foldLeft (reverse(as), z)  ((x, y) => f (y, x))
 
-  // def foldLeft1[A,B] (as: List[A], z: B) (f: (B,A) => B) : B = ...
 
   // Exercise 11
 
