@@ -125,29 +125,56 @@ object List {
   // def filter[A] (as: List[A]) (f: A => Boolean) : List[A] = ...
 
   // Exercise 13
-
-  // def flatMap[A,B](as: List[A])(f: A => List[B]) : List[B] = ...
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = as match {
+    case Nil => Nil
+    case Cons(h, t) => append(f(h), flatMap (t) (f))
+  }
 
   // Exercise 14
-
-  // def filter1[A] (l: List[A]) (p: A => Boolean) :List[A] = ...
+  def filter1[A] (l: List[A]) (p: A => Boolean) :List[A] =
+    flatMap (l) (i => if(p(i)) Cons(i, Nil) else Nil)
 
   // Exercise 15
-
-  // def add (l: List[Int]) (r: List[Int]): List[Int] = ...
+  def add (l: List[Int]) (r: List[Int]): List[Int] = (l, r) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h, t), Cons(h1, t1)) => Cons(h+h1, add(t)(t1))
+  }
 
   // Exercise 16
-
-  // def zipWith[A,B,C] (f : (A,B)=>C) (l: List[A], r: List[B]) : List[C] = ...
+  def zipWith[A,B,C] (f : (A,B)=>C) (l: List[A], r: List[B]) : List[C] = (l, r) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h, t), Cons(h1, t1)) => Cons(f(h,h1), zipWith(f)(t,t1))
+  }
 
   // Exercise 17
-
-  // def hasSubsequence[A] (sup: List[A], sub: List[A]) :Boolean = ...
+  def hasSubsequence[A] (sup: List[A], sub: List[A]) :Boolean = {
+    def startsWith[A] (x: List[A], y: List[A]) :Boolean = (x, y) match {
+      case (_, Nil) => true
+      case (Cons(h, t), Cons(h1, t1)) if h == h1 => startsWith(t, t1)
+      case _ => false
+    }
+    (sup, sub) match{
+      case (_, Nil) => true
+      case (Cons(h, t), Cons(h1, t1)) =>
+        if (h == h1 && startsWith(t, t1)) true
+        else hasSubsequence(t, sub)
+      case _ => false
+    }
+  }
 
   // Exercise 18
-
-  // def pascal (n :Int) : List[Int] = ...
-
-  // a test: pascal (4) = Cons(1,Cons(3,Cons(3,Cons(1,Nil))))
-
+  def pascal (n :Int) : List[Int] = {
+    def f (l: List[Int])(m: Int): List[Int] = {
+      if (m == 1) l
+      else {
+        val l_padded = Cons(0, l)
+        val r_padded = append(l, Cons(0, Nil))
+        val row = zipWith ((x:Int,y:Int) => x+y) (l_padded, r_padded)
+        f (row) (m-1)
+      }
+    }
+    f(Cons(1,Nil))(n)
+  }
 }
