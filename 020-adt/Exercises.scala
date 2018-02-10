@@ -110,6 +110,9 @@ object List {
   def foldRight1[A,B] (as: List[A], z: B) (f: (A, B) => B) : B =
     foldLeft (reverse(as), z)  ((x, y) => f (y, x))
 
+  def foldLeft1[A,B] (as: List[A], z: B) (f: (B, A) => B) : B =
+    (foldRight1 (as, (b: B) => b)
+      (((value: A), (rest_func: B => B)) => (v: B) => rest_func(f(v, value)))) (z)
 
   // Exercise 11
 
@@ -127,7 +130,7 @@ object List {
 
   def filter[A] (as: List[A]) (f: A => Boolean) : List[A] = as match {
     case Nil => Nil
-    case Cons(h, t) => if (f h) { filter(t) } else { Cons(h, filter(t)) }
+    case Cons(h, t) => if (f(h)) { filter (t) (f) } else { Cons(h, filter (t) (f)) }
   }
 
   // Exercise 13
