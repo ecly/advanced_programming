@@ -118,11 +118,17 @@ object List {
     case Cons(h,t) => Cons(h, append(t, a2))
   }
 
-  // def concat[A] (as: List[List[A]]) :List[A] = ..
+  def concat[A] (as: List[List[A]]) :List[A] = as match {
+    case Nil => Nil
+    case Cons(h, t) => append(h, concat(t))
+  }
 
   // Exercise 12
 
-  // def filter[A] (as: List[A]) (f: A => Boolean) : List[A] = ...
+  def filter[A] (as: List[A]) (f: A => Boolean) : List[A] = as match {
+    case Nil => Nil
+    case Cons(h, t) => if (f h) { filter(t) } else { Cons(h, filter(t)) }
+  }
 
   // Exercise 13
 
