@@ -145,6 +145,7 @@ object Tests extends App {
   // Exercise 3
   // assert (Tree.maximum (Branch(Leaf(1), Leaf(2))) == 2)
   // Exercise 4
+  // val t4 = Branch(Leaf(1), Branch(Branch(Leaf(2),Leaf(3)),Leaf(4)))
   // val t5 = Branch(Leaf("1"), Branch(Branch(Leaf("2"),Leaf("3")),Leaf("4")))
   // assert (Tree.map (t4) (_.toString) == t5)
 
