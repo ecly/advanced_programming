@@ -81,8 +81,8 @@ sealed trait Option[+A] {
 
   def map[B] (f: A=>B) : Option[B] = this match {
     case None => None
-    case Some(v) => None
-    }
+    case Some(v) => Some(f(v))
+  }
 
   // Ignore the arrow in default's type below for the time being.
   // (it should work (almost) as if it was not there)
@@ -135,14 +135,14 @@ object ExercisesOption {
   // Exercise 9 (4.4)
 
   def sequence[A] (aos: List[Option[A]]) : Option[List[A]] =
-    aos.foldRight (None: Option[List[A]]) (
-      (opt, res) => opt.map(v => Some(v::res.getOrElse(Nil))).getOrElse(res))
+    aos.foldRight (Some(Nil): Option[List[A]]) (
+      (opt, state) => ExercisesOption.map2 (state, opt) ((l, v) => v::l))
 
   // Exercise 10 (4.5)
 
   def traverse[A,B] (as: List[A]) (f :A => Option[B]) :Option[List[B]] =
-    as.foldRight (None: Option[List[B]]) (
-      (v, res) => f(v).map(v => Some(v::res.getOrElse(Nil))).getOrElse(res))
+    as.foldRight (Some(Nil): Option[List[B]]) (
+      (v, acc) => ExercisesOption.map2 (acc, f(v)) ((l, v) => v::l))
 }
 
 
