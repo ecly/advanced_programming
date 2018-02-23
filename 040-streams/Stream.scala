@@ -46,6 +46,42 @@ sealed trait Stream[+A] {
       // of ||)
     }
 
+  // Exercise 2
+  def toList: List[A] = (foldLeft (Nil: List[A]) (_::_)).reverse
+
+  // Exercise 3
+  def take (n: Int): Stream[A] = (this, n) match {
+      case (Empty, _) => Empty
+      case (_, 0) => Empty
+      case (Cons (h, t), _) => Cons(h, () => take(n-1))
+    }
+
+  def drop (n: Int): Stream[A] = (this, n) match {
+    case (Empty, _) => Empty
+    case (_, 0) => this
+    case (Cons(h, t), _) => drop(n-1)
+  }
+
+  // Exercise 4
+  def takeWhile (p: A => Boolean): Stream[A] = this.headOption match {
+    case None => Empty
+    case Some(v) => if (p(v)) { Cons(() => v, () => this.tail.takeWhile(p)) } else { Empty }
+  }
+
+  // Exercise 5
+  def forAll (p: A => Boolean): Boolean = !this.exists((v) => !p(v))
+
+  // Exercise 6
+  def takeWhile2 (p: A => Boolean): Stream[A] =
+    this.foldRight (Empty: Stream[A]) ((v, acc) => if (p(v)) {
+      Cons(() => v, () => acc.takeWhile2(p))
+    } else {
+      Empty
+    })
+
+  // Exercise 7
+  def headOption2 () :Option[A] = this.foldRight (None: Option[A]) ((v, _) => Some(v))
+
   //def find (p :A => Boolean) :Option[A] = this.filter (p).headOption
 }
 
@@ -72,6 +108,22 @@ object Stream {
     // Note 1: ":_*" tells Scala to treat a list as multiple params
     // Note 2: pattern matching with :: does not seem to work with Seq, so we
     //         use a generic function API of Seq
+
+  // Exercise 1
+  def to (n: Int): Stream[Int] = Cons(() => 1, () => to(n+1))
+
+  def from (n: Int): Stream[Int] = Cons(() => n, () => from(n-1))
+
+  val naturals = from(1)
 }
 
-// vim:tw=0:cc=80:nowrap
+object Tests extends App {
+  // Exercise 3
+  assert (naturals.take(1000000000).drop(41).take(4).toList == List(42, 43, 44, 45))
+
+  // Exercise 4
+  assert (naturals.takeWhile (_<1000000000).drop(100).take(2).toList == List(101, 102))
+
+  // Exercise 5
+  assert (naturals.forAll (_ < 0) == false)
+}
