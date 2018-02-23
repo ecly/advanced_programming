@@ -38,43 +38,51 @@
  * reimplementing them). As constructors are not inherited, We would have to
  * reimplement them in the subclass, if classes not traits are used.  This is
  * not a problem if I mix in a trait construction time. */
+import scala.math.Ordered
+import java.awt.Point
 
-/* trait OrderedPoint extends ... {
-
-  override def compare (that :java.awt.Point) :Int =  ...
-
-} */
-
+trait OrderedPoint extends Ordered[Point] {
+  this: java.awt.Point =>
+  override def compare (that :java.awt.Point) :Int = {
+      if (this.x < that.x || (this.x == that.x && this.y < that.y)) -1
+      else if (this.y > that.y) 1
+      else 0
+  }
+}
 // Chapter 3
-
-package adpro
 
 sealed trait Tree[+A]
 case class Leaf[A] (value: A) extends Tree[A]
 case class Branch[A] (left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object Tree {
-
   // Exercise 2 (3.25)
-
-  // def size[A] (t :Tree[A]) :Int = ...
+  def size[A] (t :Tree[A]) :Int = t match {
+    case Leaf(_) => 1
+    case Branch(left, right) => 1 + size(left) + size(right)
+  }
 
   // Exercise 3 (3.26)
-
-  // def maximum (t: Tree[Int]) :Int = ...
+  def maximum (t: Tree[Int]) :Int = t match {
+      case Leaf(v) => v
+      case Branch(left, right) => maximum(left).max(maximum(right))
+  }
 
   // Exercise 4 (3.28)
-
-  // def map[A,B] (t: Tree[A]) (f: A => B) : Tree[B] = ...
+  def map[A,B] (t: Tree[A]) (f: A => B) : Tree[B] = t match {
+    case Leaf(t) => Leaf(f(t))
+    case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+  }
 
   // Exercise 5 (3.29)
+  def fold[A,B] (t: Tree[A]) (g: A => B) (f: (B,B) => B) :B = t match {
+    case Leaf(v) => g(v)
+    case Branch(left, right) => f (fold(left)(g)(f), fold(right)(g)(f))
+  }
 
-  // def fold[A,B] (t: Tree[A]) (f: (B,B) => B) (g: A => B) :B = ...
-
-  // def size1[A] ...
-  // def maximum1 ...
-  // def map1[A,B] ...
-
+  def size1[A] (t: Tree[A]): Int = fold(t)(_=>1)(_+_+1)
+  def maximum1 (t: Tree[Int]): Int = fold(t)(identity)(_ max _)
+  def map1[A,B] (t: Tree[A])(f: A => B): Tree[B] = fold(t)(x => Leaf(f(x)): Tree[B])((l, r) => Branch(l, r))
 }
 
 sealed trait Option[+A] {
@@ -154,9 +162,9 @@ object ExercisesOption {
 object Tests extends App {
 
   // Exercise 1
-  // val p = new java.awt.Point(0,1) with OrderedPoint
-  // val q = new java.awt.Point(0,2) with OrderedPoint
-  // assert(p < q)
+  val p = new java.awt.Point(0,1) with OrderedPoint
+  val q = new java.awt.Point(0,2) with OrderedPoint
+  assert(p < q)
 
   // Notice how we are using nice infix comparison on java.awt
   // objects that were implemented way before Scala existed :) (And without the
@@ -165,18 +173,19 @@ object Tests extends App {
 
 
   // Exercise 2
-  // assert (Tree.size (Branch(Leaf(1), Leaf(2))) == 3)
+  assert (Tree.size (Branch(Leaf(1), Leaf(2))) == 3)
   // Exercise 3
-  // assert (Tree.maximum (Branch(Leaf(1), Leaf(2))) == 2)
+  assert (Tree.maximum (Branch(Leaf(1), Leaf(2))) == 2)
   // Exercise 4
+
   // val t4 = Branch(Leaf(1), Branch(Branch(Leaf(2),Leaf(3)),Leaf(4)))
   // val t5 = Branch(Leaf("1"), Branch(Branch(Leaf("2"),Leaf("3")),Leaf("4")))
   // assert (Tree.map (t4) (_.toString) == t5)
 
   // Exercise 5
-  // assert (Tree.size1 (Branch(Leaf(1), Leaf(2))) == 3)
-  // assert (Tree.maximum1 (Branch(Leaf(1), Leaf(2))) == 2)
-  // assert (Tree.map1 (t4) (_.toString) == t5)
+  assert (Tree.size1 (Branch(Leaf(1), Leaf(2))) == 3)
+  assert (Tree.maximum1 (Branch(Leaf(1), Leaf(2))) == 2)
+  assert (Tree.map1 (t4) (_.toString) == t5)
 
   // Exercise 6
   assert (Some(1).map (x => x +1) == Some(2))
