@@ -53,14 +53,16 @@ sealed trait Stream[+A] {
   def take (n: Int): Stream[A] = (this, n) match {
       case (Empty, _) => Empty
       case (_, 0) => Empty
-      case (Cons (h, t), _) => Cons(h, () => take(n-1))
+      case (Cons (h, t), _) => Cons(h, () => t().take(n-1))
     }
 
   def drop (n: Int): Stream[A] = (this, n) match {
     case (Empty, _) => Empty
     case (_, 0) => this
-    case (Cons(h, t), _) => drop(n-1)
+    case (Cons(h, t), _) => t().drop(n-1)
   }
+
+  // It is fast since only the first 51 values are considered, since the streams and take are lazy.
 
   // Exercise 4
   def takeWhile (p: A => Boolean): Stream[A] = this.headOption match {
@@ -68,13 +70,18 @@ sealed trait Stream[+A] {
     case Some(v) => if (p(v)) { Cons(() => v, () => this.tail.takeWhile(p)) } else { Empty }
   }
 
+  // Similar to above, takeWhile is lazy, so only the first 150 values are considered.
+
   // Exercise 5
   def forAll (p: A => Boolean): Boolean = !this.exists((v) => !p(v))
+
+  // Forall needs to look at every element, so if every value in an infinite stream has the property,
+  // an infinite number values must be loked at.
 
   // Exercise 6
   def takeWhile2 (p: A => Boolean): Stream[A] =
     this.foldRight (Empty: Stream[A]) ((v, acc) => if (p(v)) {
-      Cons(() => v, () => acc.takeWhile2(p))
+      Cons(() => v, () => acc)
     } else {
       Empty
     })
@@ -110,20 +117,9 @@ object Stream {
     //         use a generic function API of Seq
 
   // Exercise 1
-  def to (n: Int): Stream[Int] = Cons(() => 1, () => to(n+1))
+  def to (n: Int): Stream[Int] = Cons(() => n, () => to(n-1))
 
-  def from (n: Int): Stream[Int] = Cons(() => n, () => from(n-1))
+  def from (n: Int): Stream[Int] = Cons(() => n, () => from(n+1))
 
   val naturals = from(1)
-}
-
-object Tests extends App {
-  // Exercise 3
-  assert (naturals.take(1000000000).drop(41).take(4).toList == List(42, 43, 44, 45))
-
-  // Exercise 4
-  assert (naturals.takeWhile (_<1000000000).drop(100).take(2).toList == List(101, 102))
-
-  // Exercise 5
-  assert (naturals.forAll (_ < 0) == false)
 }
