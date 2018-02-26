@@ -39,4 +39,16 @@ object Tests extends App {
   assert (from(1).take(1000000000).drop (41).take(10).toList ==
     from1(1).take(1000000000).drop (41).take(10).toList)
   assert (fibs1.take(100).toList == fibs.take(100).toList)
+
+  // Exercise 13
+  assert (naturals.map1(_+1).take(200000000).take(5).toList == naturals.drop(1).take(5).toList)
+  assert (naturals.take(200000000).take1(5).toList == naturals.take(5).toList)
+  assert (naturals.take(200000000).takeWhile1(_<=5).toList == naturals.take(5).toList)
+  assert (naturals.zipWith1[Int,Int](_+_)(naturals).take(200000000).take(3).toList == List(2,4,6))
+
+  assert (naturals.map(_%2==0).zipWith1[Boolean,Boolean](_||_)(naturals.map (_%2==1)).take(3).toList
+    == List(true, true, true))
+
+  assert (naturals.map(_%2==0).zipWith1[Boolean,Boolean](_&&_)(naturals.map (_%2==1)).take(3).toList
+    == List(false, false, false))
 }

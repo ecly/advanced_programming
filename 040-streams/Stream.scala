@@ -108,7 +108,30 @@ sealed trait Stream[+A] {
   // whereas for lists we would filter the entire lists and then take the head.
   def find (p :A => Boolean) :Option[A]= this.filter(p).headOption
 
+  // Exercise 13
+  def map1[B] (f : A => B) : Stream[B] = unfold(this) {
+      case Empty => None
+      case Cons(h,t) => Some(f(h()), t())
+  }
+
+  def take1 (n : Int) : Stream[A] = unfold(this,n){
+    case (Empty, _) => None
+    case (Cons(_,_),0) => None
+    case (Cons(h,t),n) => Some(h(), (t(),n-1))
+  }
+
+  def takeWhile1 (p : A => Boolean) : Stream[A] = unfold(this){
+    case Empty => None
+    case Cons(h,t) => if (p(h())) Some(h(), t()) else None
+  }
+
+  def zipWith1[B,C] (f : (=>A,=>B) => C) (that : Stream[B]) : Stream[C] = unfold(this, that){
+    case (Empty, _) => None
+    case (_, Empty) => None
+    case (Cons(h,t), Cons(h1,t1)) => Some(f(h(),h1()), (t(),t1()))
+  }
 }
+
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: ()=>A, t: ()=>Stream[A]) extends Stream[A]
 
