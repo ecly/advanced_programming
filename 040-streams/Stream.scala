@@ -2,6 +2,8 @@
 // Andrzej Wąsowski, IT University of Copenhagen
 //
 // meant to be compiled, for example: fsc Stream.scala
+// AUTHOR1: miev@itu.dk
+// AUTHOR2: ecly@itu.dk
 
 package fpinscala.laziness
 

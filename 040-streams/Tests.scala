@@ -1,6 +1,9 @@
 import fpinscala.laziness._
 import fpinscala.laziness.Stream._
 
+// AUTHOR1: miev@itu.dk
+// AUTHOR2: ecly@itu.dk
+
 object Tests extends App {
   // Exercise 1
   assert (Stream.from(5).take(5).toList == List(5, 6, 7, 8, 9))

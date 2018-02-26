@@ -3,6 +3,9 @@
 //
 // A script meant to be loaded into REPL (scala -i Main.scala)
 
+// AUTHOR1: miev@itu.dk
+// AUTHOR2: ecly@itu.dk
+
 import fpinscala.laziness._
 import fpinscala.laziness.Stream._
 
