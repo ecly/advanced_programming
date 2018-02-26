@@ -90,11 +90,25 @@ sealed trait Stream[+A] {
   def headOption2 () :Option[A] = this.foldRight (None: Option[A]) ((v, _) => Some(v))
 
   //def find (p :A => Boolean) :Option[A] = this.filter (p).headOption
+  //def foldRight[B] (z : =>B) (f :(A, =>B) => B) :B = this match
+
+  // Exercise 8
+  def map[B] (f : A => B) : Stream[B] =
+    this.foldRight (Empty : Stream[B]) ((a,b) => cons(f(a),b))
+
+  def filter[B] (p : A => Boolean) : Stream[A] =
+    this.foldRight (Empty : Stream[A]) ((a,b) => if (p(a)) cons(a, b) else b)
+
+  def append[B>:A] (that : => Stream[B]) :Stream[B] = foldRight (that) (cons (_,_))
+
+  def flatMap[B] (f : A => Stream[B]) : Stream[B] =
+    this.foldRight (Empty : Stream[B]) ((a,b) => f(a).append(b))
+
+  // For streams we will only filter until we're able to take the head,
+  // whereas for lists we would filter the entire lists and then take the head.
+  def find (p :A => Boolean) :Option[A]= this.filter(p).headOption
+
 }
-
-
-
-
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: ()=>A, t: ()=>Stream[A]) extends Stream[A]
 
