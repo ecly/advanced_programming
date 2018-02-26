@@ -29,4 +29,14 @@ object Tests extends App {
     List(1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10))
   assert (naturals.flatMap (to _).take(2).toList == List (1, 0))
   assert (naturals.flatMap (x =>from (x)).take (2).toList == List (1, 2))
+
+  // Exercise 11
+  assert (Stream.unfold(naturals){
+    case Cons(h,t) => Some(h(),t())
+    case Empty => None}.take(3).toList == List(1,2,3))
+
+  // Exercise 12
+  assert (from(1).take(1000000000).drop (41).take(10).toList ==
+    from1(1).take(1000000000).drop (41).take(10).toList)
+  assert (fibs1.take(100).toList == fibs.take(100).toList)
 }

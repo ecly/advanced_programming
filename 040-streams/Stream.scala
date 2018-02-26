@@ -136,4 +136,20 @@ object Stream {
   def from (n: Int): Stream[Int] = Cons(() => n, () => from(n+1))
 
   val naturals = from(1)
+
+  // Exercise 10
+  def fibs : Stream[Int] = {
+    def f(x:Int)(y:Int) : Stream[Int] = cons(x, f(y)(y+x))
+    f (0)(1)
+  }
+
+  // Exercise 11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => empty
+    case Some((x,xs)) => cons(x, unfold(xs)(f))
+  }
+
+  // Exercise 12
+  def from1 (n: Int): Stream[Int] = unfold (1)(n => Some(n,n+1))
+  def fibs1 : Stream[Int] = unfold (0,1){case (x,y) => Some(x,(y,y+x))}
 }
