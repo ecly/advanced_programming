@@ -2,6 +2,8 @@
 // Andrzej Wąsowski, IT University of Copenhagen
 //
 // meant to be compiled, for example: fsc Stream.scala
+// AUTHOR1: miev@itu.dk
+// AUTHOR2: ecly@itu.dk
 
 package fpinscala.laziness
 
@@ -90,10 +92,47 @@ sealed trait Stream[+A] {
   def headOption2 () :Option[A] = this.foldRight (None: Option[A]) ((v, _) => Some(v))
 
   //def find (p :A => Boolean) :Option[A] = this.filter (p).headOption
+  //def foldRight[B] (z : =>B) (f :(A, =>B) => B) :B = this match
+
+  // Exercise 8
+  def map[B] (f : A => B) : Stream[B] =
+    this.foldRight (Empty : Stream[B]) ((a,b) => cons(f(a),b))
+
+  def filter[B] (p : A => Boolean) : Stream[A] =
+    this.foldRight (Empty : Stream[A]) ((a,b) => if (p(a)) cons(a, b) else b)
+
+  def append[B>:A] (that : => Stream[B]) :Stream[B] = foldRight (that) (cons (_,_))
+
+  def flatMap[B] (f : A => Stream[B]) : Stream[B] =
+    this.foldRight (Empty : Stream[B]) ((a,b) => f(a).append(b))
+
+  // For streams we will only filter until we're able to take the head,
+  // whereas for lists we would filter the entire lists and then take the head.
+  def find (p :A => Boolean) :Option[A]= this.filter(p).headOption
+
+  // Exercise 13
+  def map1[B] (f : A => B) : Stream[B] = unfold(this) {
+      case Empty => None
+      case Cons(h,t) => Some(f(h()), t())
+  }
+
+  def take1 (n : Int) : Stream[A] = unfold(this,n){
+    case (Empty, _) => None
+    case (Cons(_,_),0) => None
+    case (Cons(h,t),n) => Some(h(), (t(),n-1))
+  }
+
+  def takeWhile1 (p : A => Boolean) : Stream[A] = unfold(this){
+    case Empty => None
+    case Cons(h,t) => if (p(h())) Some(h(), t()) else None
+  }
+
+  def zipWith1[B,C] (f : (=>A,=>B) => C) (that : Stream[B]) : Stream[C] = unfold(this, that){
+    case (Empty, _) => None
+    case (_, Empty) => None
+    case (Cons(h,t), Cons(h1,t1)) => Some(f(h(),h1()), (t(),t1()))
+  }
 }
-
-
-
 
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: ()=>A, t: ()=>Stream[A]) extends Stream[A]
@@ -122,4 +161,20 @@ object Stream {
   def from (n: Int): Stream[Int] = Cons(() => n, () => from(n+1))
 
   val naturals = from(1)
+
+  // Exercise 10
+  def fibs : Stream[Int] = {
+    def f(x:Int)(y:Int) : Stream[Int] = cons(x, f(y)(y+x))
+    f (0)(1)
+  }
+
+  // Exercise 11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => empty
+    case Some((x,xs)) => cons(x, unfold(xs)(f))
+  }
+
+  // Exercise 12
+  def from1 (n: Int): Stream[Int] = unfold (1)(n => Some(n,n+1))
+  def fibs1 : Stream[Int] = unfold (0,1){case (x,y) => Some(x,(y,y+x))}
 }
