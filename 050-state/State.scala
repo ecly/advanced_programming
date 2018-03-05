@@ -73,13 +73,19 @@ object RNG {
 
   // Exercise 7 (6.7)
 
-  // def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+  //def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+  //  fs.foldRight (unit(Nil):Rand[List[A]]) ((v, acc) => map2 (acc) (v) ((acc, v) => v::acc))
 
   // def _ints(count: Int): Rand[List[Int]] = ...
 
   // Exercise 8 (6.8)
 
-  // def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ...
+  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rng => {
+      val (a, rng2) = f(rng)
+      g (a) (rng2)
+    }
+
 
   // def nonNegativeLessThan(n: Int): Rand[Int] = { ...
 
@@ -91,11 +97,27 @@ case class State[S, +A](run: S => (A, S)) {
 
   // Exercise 9 (6.10)
 
-  // def map[B](f: A => B): State[S, B] = ...
+  def map[B](f: A => B): State[S, B] =
+    State (
+      s => {
+        val (a, s2) = run (s)
+        (f (a), s2)
+      })
 
-  // def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] = ...
+  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+    State (
+      s => {
+        val (a, s2) = run (s)
+        val (b, s3) = sb.run (s2)
+        (f (a, b), s3)
+      })
 
-  // def flatMap[B](f: A => State[S, B]): State[S, B] = State(s => { ...
+  def flatMap[B](f: A => State[S, B]): State[S, B] =
+    State(
+      s => {
+        val (a, s2) = run (s)
+        (f (a)).run(s2)
+      })
 
 }
 
@@ -107,8 +129,9 @@ object State {
 
   // Exercise 9 (6.10) continued
 
-  // def sequence[S,A](sas: List[State[S, A]]): State[S, List[A]] = ...
-  //
+  def sequence[S,A](sas: List[State[S, A]]): State[S, List[A]] =
+    sas.foldRight (unit(Nil):State[S, List[A]]) ((v, acc) => acc.map2 (v) ((acc, v) => v::acc))
+
   // This is given in the book:
 
   // def modify[S](f: S => S): State[S, Unit] = for {
@@ -125,13 +148,16 @@ object State {
 
   // Exercise 10
 
-  // def state2stream[S,A] (s :State[S,A]) (seed :S) :Stream[A] = ...
+  def state2stream[S,A] (s :State[S,A]) (seed :S) :Stream[A] = {
+    val (a, s2) = s.run(seed)
+    Stream.cons(a, state2stream (s) (s2))
+  }
 
   // Exercise 11
 
-  // val random_integers = ...
+  val random_integers = state2stream (random_int) (RNG.Simple(12313))
+  val ten_randoms = random_integers.take(10)
 
 }
 
 
-// vim:cc=80:foldmethod=indent:foldenable
