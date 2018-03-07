@@ -62,7 +62,12 @@ object Par {
 
   // Exercise 4: implement map3 using map2
 
-  // def map3[A,B,C,D] (pa :Par[A], pb: Par[B], pc: Par[C]) (f: (A,B,C) => D) :Par[D]  = ...
+  def map3[A,B,C,D] (pa :Par[A], pb: Par[B], pc: Par[C]) (f: (A,B,C) => D) :Par[D]  =  {
+    def partialAB (a: A, b: B)(c: C): D = f(a, b, c)
+    val partialCD: Par[C => D] = map2(pa, pb)((a, b) => partialAB(a, b))
+    def applyFunc(fcd: C => D, c: C): D = fcd(c)
+    map2(partialCD, pc)((c2d, c) => applyFunc(c2d, c))
+  }
 
   // shown in the book
 
@@ -70,7 +75,8 @@ object Par {
 
   // Exercise 5 (CB7.11)
 
-  // def choiceN[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] =
+  def choiceN[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] =
+    map2(n)(idx => (es => choices(idx(es))))
 
   // def choice[A] (cond: Par[Boolean]) (t: Par[A], f: Par[A]) : Par[A] =
 
