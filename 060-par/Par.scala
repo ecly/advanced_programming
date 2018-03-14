@@ -62,7 +62,12 @@ object Par {
 
   // Exercise 4: implement map3 using map2
 
-  // def map3[A,B,C,D] (pa :Par[A], pb: Par[B], pc: Par[C]) (f: (A,B,C) => D) :Par[D]  = ...
+  def map3[A,B,C,D] (pa :Par[A], pb: Par[B], pc: Par[C]) (f: (A,B,C) => D) :Par[D]  =  {
+    def partialAB (a: A, b: B)(c: C): D = f(a, b, c)
+    val partialCD: Par[C => D] = map2(pa, pb)((a, b) => partialAB(a, b))
+    def applyFunc(fcd: C => D, c: C): D = fcd(c)
+    map2(partialCD, pc)((c2d, c) => applyFunc(c2d, c))
+  }
 
   // shown in the book
 
@@ -70,21 +75,31 @@ object Par {
 
   // Exercise 5 (CB7.11)
 
-  // def choiceN[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] =
+  def choiceN[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] =
+    map2(n,sequence(choices))((idx, l) => l(idx))
 
-  // def choice[A] (cond: Par[Boolean]) (t: Par[A], f: Par[A]) : Par[A] =
+  def choice[A] (cond: Par[Boolean]) (t: Par[A], f: Par[A]) : Par[A] =
+    choiceN (map (cond) (b => if (b) 0 else 1)) (List(t, f))
 
   // Exercise 6 (CB7.13)
 
-  // def chooser[A,B] (pa: Par[A]) (choices: A => Par[B]): Par[B] =
+  // def map[A,B] (pa: Par[A]) (f: A => B) : Par[B] =
+  def chooser[A,B] (pa: Par[A]) (choices: A => Par[B]): Par[B] = es => choices(pa(es).get)(es)
 
-  // def choiceNviaChooser[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] =
+  def choiceNviaChooser[A] (n: Par[Int]) (choices: List[Par[A]]) :Par[A] = chooser(n)(choices)
 
-  // def choiceViaChooser[A] (cond: Par[Boolean]) (t: Par[A], f: Par[A]) : Par[A] =
+  def choiceViaChooser[A] (cond: Par[Boolean]) (t: Par[A], f: Par[A]) : Par[A] =
+    chooser(cond)(b => if (b) t else f)
 
   // Exercise 7 (CB7.14)
 
-  // def join[A] (a : Par[Par[A]]) :Par[A] =
+  def join[A] (a : Par[Par[A]]) :Par[A] = chooser (a) (identity _)
+
+  // Yes:
+  // def flatmap[A,B] (pa: Par[A]) (choices: A => Par[B]): Par[B] = join (map (pa) (choices))
+  //
+  // join is equal to chooser with the identify function (as seen in its declaration),
+  // and the same goes for the relation between List.flatten and List.flatmap
 
   class ParOps[A](p: Par[A]) {
 
