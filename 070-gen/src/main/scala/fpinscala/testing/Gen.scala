@@ -60,7 +60,8 @@ case class Gen[A] (sample :State[RNG,A]) {
 
   // Exercise 5 (Second part of Ex. 8.6)
 
-  // def listOfN(size: Gen[Int]): Gen[List[A]] = ...
+  def listOfN(size: Gen[Int]): Gen[List[A]] =
+    size.flatMap (n => this.listOfN(n))
 
   // Exercise 6 (Ex. 8.7; I implemented it as a method, the book asks for a
   // function, the difference is minor; you may want to have both for
