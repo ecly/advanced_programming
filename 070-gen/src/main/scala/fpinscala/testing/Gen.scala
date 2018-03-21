@@ -45,31 +45,18 @@ case class Gen[A] (sample :State[RNG,A]) {
   // the book uses Stream.unfold, but apparently the standard library lacks this method
 
   // Exercise 3 (Ex 8.5 second part)
-  //
-  // Hint: The standard library has the following useful function (List
-  // companion object):
-  //
-  // def fill[A](n: Int)(elem: ⇒ A): List[A]
-  //
-  // It is of course possible to implement a solution without it, but the
-  // result is ugly (you need to replicate the behavior of fill inside
-  // listOfN). Then note that State has a method sequence which allows to take
-  // a list of automata and execute their transitions as a sequence, feeding
-  // the output state of one as an input to the next.  This can be used to
-  // execute a series of consecutive generations, passing the RNG state around.
 
-  // def listOfN (n :Int) :Gen[List[A]] = ...
-
+  def listOfN (n :Int) :Gen[List[A]] =
+    Gen(State.sequence(List.fill (n) (sample)))
 
 
   // Exercise 4 (Ex. 8.6 [Chiusano, Bjarnasson 2015])
 
-  // def flatMap[B] (f: A => Gen[B]) :Gen[B] = ...
-
+  def flatMap[B] (f: A => Gen[B]) :Gen[B] = Gen(sample.flatMap(a => f(a).sample))
 
   // It would be convenient to also have map (uncomment once you have unit and flatMap)
 
-  // def map[B] (f : A => B) :Gen[B] = this.flatMap (a => Gen.unit[B] (f(a)))
+  def map[B] (f : A => B) :Gen[B] = this.flatMap (a => Gen.unit[B] (f(a)))
 
   // Exercise 5 (Second part of Ex. 8.6)
 
@@ -101,37 +88,21 @@ object Gen {
   def anyInteger :Gen[Int] = Gen(State(_.nextInt))
 
   // Exercise 1 (Ex. 8.4)
-  //
-  // Hint: Before solving the exercise study the type \lstinline{Gen} in
-  // \texttt{Gen.scala}. Then, think how to convert a random integer to a
-  // random integer in a range.  Then recall that we are already using
-  // generators that are wrapped in \texttt{State} and the state has a
-  // \lstinline{map} function.
 
-  // def choose (start :Int, stopExclusive :Int) :Gen[Int] = ...
-
-
+  def choose (start :Int, stopExclusive :Int) :Gen[Int] =
+    Gen(anyInteger.sample.map(v => Math.floorMod(v, (stopExclusive-start))+start))
 
   // Exercise 2 (Exercise 8.5, part one)
-  //
-  // Hint: The \lstinline{State} trait already had \lstinline{unit}
-  // implemented.
 
-  // def unit[A] (a : =>A) :Gen[A] = ...
+  def unit[A] (a : =>A) :Gen[A] = Gen(State.unit(a))
 
   // Hint: How do you convert a random integer number to a random Boolean?
   // Alternatively: do we already have a random generator for booleans? Could
   // we wrap it in.
 
-  // def boolean :Gen[Boolean] = ...
+  def boolean :Gen[Boolean] = Gen(State(RNG.boolean))
 
-
-  // Hint: Recall from Exercise1.scala that we already implemented a random
-  // number generator for doubles.
-
-  // def double :Gen[Double] = ...
-
-
+  def double :Gen[Double] = Gen(State(RNG.double))
 
   // (Exercise 3 is found in the Gen class above)
 
@@ -182,5 +153,3 @@ case class Prop (run :(TestCases,RNG) => Result) {
   // def || (that :Prop) :Prop = Prop { ... }
 
 }
-
-// vim:cc=80:foldmethod=indent:foldenable
