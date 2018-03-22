@@ -70,7 +70,8 @@ case class Gen[A] (sample :State[RNG,A]) {
   // Hint: we already have a generator that emulates tossing a coin. Which one
   // is it? Use flatMap with it.
 
-  // def union (that :Gen[A]) :Gen[A] = ...
+  def union (that :Gen[A]) :Gen[A] =
+    Gen.boolean.flatMap(b => if (b) this else that)
 
   // Exercise 7 continues in the bottom of the file (in the companion object)
 }
@@ -148,9 +149,21 @@ import Prop._
 case class Prop (run :(TestCases,RNG) => Result) {
 
   // (Exercise 7)
+  def && (that :Prop) :Prop = Prop {
+    (n,rng) => {
+      this.run(n, rng) match {
+        case Passed => that.run(n,rng)
+        case x => x
+      }
+    }
+  }
 
-  // def && (that :Prop) :Prop = Prop { ... }
-
-  // def || (that :Prop) :Prop = Prop { ... }
-
+  def || (that :Prop) :Prop = Prop {
+    (n,rng) => {
+      this.run(n, rng) match {
+        case Falsified(_,_) => that.run(n,rng)
+        case x => x
+      }
+    }
+  }
 }
