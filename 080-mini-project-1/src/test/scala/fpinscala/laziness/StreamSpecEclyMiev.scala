@@ -113,7 +113,9 @@ class StreamSpecEclyMiev extends FlatSpec with Checkers {
 
   it should "not matter if converted to List before or after" in check {
     Prop.forAll {
-      (s1: Stream[Int], s2: Stream[Int]) => s1.append(s2).toList == s1.toList ++ s2.toList
+      (s1: Stream[Int], s2: Stream[Int]) => {
+        s1.append(s2).toList == s1.toList ++ s2.toList
+      }
     }
   }
 
