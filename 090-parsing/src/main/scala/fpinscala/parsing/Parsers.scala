@@ -75,28 +75,35 @@ trait Parsers[ParseError, Parser[+_]] { self =>
 
 
   // Exercise 1
-
-  // def manyA
+  def manyA: Parser[Int]
 
   // Exercise 2
 
-  def map2[A,B,C](p: Parser[A], p2: Parser[B])(f: (A,B) => C): Parser[C] = ???
+  def map2[A,B,C](p: Parser[A], p2: Parser[B])(f: (A,B) => C): Parser[C] = ??? /*{
+    val prod: Parser[(A, B)] = p ** p2
+     prod map f
+  }*/
 
-  def many1[A](p: Parser[A]): Parser[List[A]] = ???
+ def many1[A](p: Parser[A]): Parser[List[A]] = map2 (p, many(p)) ((a, b) => a::b)
 
   // Exercise 3
 
-  // def digitTimesA  ...
+  def digitTimesA: Parser[Int] =
+    """(\d)""".r
+      .map(n => n.toInt)
+      .flatMap(n => listOfN (n, 'a').map(_ => n))
 
   // Exercise 4
 
-  // def product_[A,B] ...
+  def product_[A,B] (p: Parser[A], p2: Parser[B]): Parser[(A, B)] =
+    p.flatMap(a => p2.flatMap(b => succeed (a, b)))
 
-  // def map2_ ...
+  def map2_[A, B, C] (p: Parser[A], p2: Parser[B]) (f: (A, B) => C): Parser[C] =
+    p.flatMap(a => p2.flatMap(b => succeed (f(a, b))))
 
   // Exercise 5
-
-  // def map_ ...
+  def map_[A, B] (p: Parser[A]) (f: A => B): Parser[B] =
+    p.flatMap(a => succeed(f(a)))
 
 }
 
