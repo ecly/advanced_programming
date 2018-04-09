@@ -79,10 +79,11 @@ trait Parsers[ParseError, Parser[+_]] { self =>
 
   // Exercise 2
 
-  def map2[A,B,C](p: Parser[A], p2: Parser[B])(f: (A,B) => C): Parser[C] = ??? /*{
-    val prod: Parser[(A, B)] = p ** p2
-     prod map f
-  }*/
+  def map2[A,B,C](p: Parser[A], p2: Parser[B])(f: (A,B) => C): Parser[C] =
+    for {
+      product <- p ** p2
+      (a, b) = product
+    } yield f(a, b)
 
  def many1[A](p: Parser[A]): Parser[List[A]] = map2 (p, many(p)) ((a, b) => a::b)
 
