@@ -26,14 +26,29 @@ object Monoid {
 
   // Exercise 1
 
-  // val intAddition =
-  // val intMultiplication =
-  // val booleanOr =
-  // val booleanAnd =
+  val intAddition = new Monoid[Int] {
+    def op(a1: Int, a2: Int) = a1+a2
+    val zero = 0
+  }
+  val intMultiplication = new Monoid[Int] {
+    def op(a1: Int, a2: Int) = a1*a2
+    val zero = 1
+  }
+  val booleanOr = new Monoid[Boolean] {
+    def op(a1: Boolean, a2: Boolean) = a1 | a2
+    val zero = false
+  }
+  val booleanAnd = new Monoid[Boolean] {
+    def op(a1: Boolean, a2: Boolean) = a1 & a2
+    val zero = true
+  }
 
   // Exercise 2
 
-  // def optionMonoid[A] = ...
+  def optionMonoid[A] = new Monoid[Option[A]] {
+    def op(a1: Option[A], a2: Option[A]) = a1.orElse(a2)
+    val zero = None
+  }
 
   def dual[A] (m :Monoid[A]) = new Monoid[A] {
     def op (a1: A, a2: A) = m.op(a2,a1)
@@ -41,7 +56,10 @@ object Monoid {
   }
 
   // Exercise 3
-  // def endoMonoid[A] =
+  def endoMonoid[A] = new Monoid[A => A] {
+    def op(a1: A => A, a2: A => A) = v => a1(a2(v))
+    val zero = (v:A) => v
+  }
 
   // Exercise 4 is solved in MonoidSpec.scala
 
@@ -54,7 +72,10 @@ object Monoid {
   // with scala check for instance by composing an Option[Int] monoid with a
   // List[String] monoid and running through our monoid laws.
 
-  // def productMonoid[A,B] (ma: Monoid[A]) (mb: Monoid[B]) =
+  def productMonoid[A,B] (ma: Monoid[A]) (mb: Monoid[B]) = new Monoid[(A, B)] {
+    def op(a1: (A, B), a2: (A, B)) = (ma.op(a1._1, a2._1), mb.op(a1._2, a2._2))
+    val zero = (ma.zero, mb.zero)
+  }
 
 }
 
