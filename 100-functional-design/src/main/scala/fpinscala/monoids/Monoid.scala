@@ -90,18 +90,22 @@ trait Foldable[F[_]] {
 
   // Exercise 9 (CB 10.15)
 
-  // def toList[A] (fa: F[A]) :List[A]
+  def toList[A] (fa: F[A]) :List[A] =
+    foldRight (fa) (Nil: List[A]) ((v, acc) => v::acc)
 }
 
 // Exercise 8 (CB 10.12 We just do Foldable[List])
 
 object Foldable extends Foldable[List] {
 
-  def foldRight[A,B] (as: List[A]) (b: B) (f: (A,B) => B): B = ???
+  def foldRight[A,B] (as: List[A]) (b: B) (f: (A,B) => B): B =
+    as.foldRight (b) (f)
 
-  def foldLeft[A,B] (as: List[A]) (b: B) (f: (B,A) => B): B = ???
+  def foldLeft[A,B] (as: List[A]) (b: B) (f: (B,A) => B): B =
+    as.foldLeft (b) (f)
 
-  def foldMap[A,B] (as: List[A]) (f: A => B) (mb: Monoid[B]): B = ???
+  def foldMap[A,B] (as: List[A]) (f: A => B) (mb: Monoid[B]): B =
+    as.foldRight (mb.zero) ((v, acc) => mb.op(f(v), acc))
 }
 
 // vim:cc=80:tw=80
