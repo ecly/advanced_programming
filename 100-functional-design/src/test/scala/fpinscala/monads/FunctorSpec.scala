@@ -21,6 +21,8 @@ object FunctorSpec extends Properties("Functor[F[_]] properties..") {
     mapLaw[Int,List](ListFunctor)
 
   // Exercise 11 (for OptionFunctor)
+  property ("Functor[Option[Int]] satisfies the functor law") =
+    mapLaw[Int,Option](OptionFunctor)
 
   // property ...
 }
