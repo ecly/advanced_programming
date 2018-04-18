@@ -5,6 +5,10 @@
 // Scalacheck's user guide:
 // https://github.com/rickynils/scalacheck/wiki/User-Guide
 
+// AUTHORS:
+// miev@itu.dk
+// ecly@itu.dk
+
 package fpinscala.monads
 import org.scalacheck._
 import org.scalacheck.Prop._

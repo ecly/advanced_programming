@@ -5,6 +5,10 @@
 // Scalacheck's user guide:
 // https://github.com/rickynils/scalacheck/wiki/User-Guide
 
+// AUTHORS:
+// miev@itu.dk
+// ecly@itu.dk
+
 package fpinscala.monads
 import org.scalacheck._
 import org.scalacheck.Prop._
@@ -38,8 +42,6 @@ object  MonadSpec extends Properties("Monad[F[_]] laws..") {
 
   // uncomment when you have optionMonad
   property ("of optionMonad") = monad[Int,Option] (optionMonad)
-  property ("of listMonad") = monad[Int,List] (listMonad) && monad[String,List] (listMonad)
-
 
   // Now test more monads:
 

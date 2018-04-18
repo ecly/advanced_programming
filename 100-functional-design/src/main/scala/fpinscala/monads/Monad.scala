@@ -1,5 +1,10 @@
 // Advanced Programming 2015
 // Andrzej Wasowski, IT University of Copenhagen
+
+// AUTHORS:
+// miev@itu.dk
+// ecly@itu.dk
+
 package fpinscala.monads
 import scala.language.higherKinds
 
