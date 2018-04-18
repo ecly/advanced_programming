@@ -90,31 +90,29 @@ it should "throw a scala exception on division by 0" in
   { intercept[java.lang.ArithmeticException] {
     StateEvaluator.eval (error).step (0) } }
 
-//  // Section 2.4 [Wadler] Variation three: Output
-//
-//  val result = "eval(Cons(1972)) <= 1972\n" +
-//               "eval(Cons(2)) <= 2\n" +
-//               "eval(Div(Cons(1972),Cons(2))) <= 986\n" +
-//               "eval(Cons(23)) <= 23\n" +
-//               "eval(Div(Div(Cons(1972),Cons(2)),Cons(23))) <= 42\n"
-//
-//  behavior of "Output eval (answer)"
-//  it should "give good 'result' and string output" in {
-//    val r = OutputEvaluator.eval(answer)
-//    r.a shouldBe 42
-//    r.o shouldBe result
-//  }
-//  it should "return simple result for a constant" in {
-//    val r = OutputEvaluator.eval(const)
-//    r.a shouldBe 42
-//    r.o shouldBe "eval(Cons(42)) <= 42\n"
-//  }
-//  it should "throw a scala exception on division by 0" in
-//  { intercept[java.lang.ArithmeticException] {
-//    OutputEvaluator.eval (error) } }
-//
-//
-//
+  // Section 2.4 [Wadler] Variation three: Output
+
+val result = "eval(Cons(1972)) <= 1972\n" +
+             "eval(Cons(2)) <= 2\n" +
+             "eval(Div(Cons(1972),Cons(2))) <= 986\n" +
+             "eval(Cons(23)) <= 23\n" +
+             "eval(Div(Div(Cons(1972),Cons(2)),Cons(23))) <= 42\n"
+
+behavior of "Output eval (answer)"
+it should "give good 'result' and string output" in {
+  val r = OutputEvaluator.eval(answer)
+  r.a shouldBe 42
+  r.o shouldBe result
+}
+it should "return simple result for a constant" in {
+  val r = OutputEvaluator.eval(const)
+  r.a shouldBe 42
+  r.o shouldBe "eval(Cons(42)) <= 42\n"
+}
+it should "throw a scala exception on division by 0" in
+{ intercept[java.lang.ArithmeticException] {
+  OutputEvaluator.eval (error) } }
+
 // Section 2.6 [Wadler] Variation zero, revisited: The basic evaluator
 
 behavior of "Basic monadic eval"
@@ -208,36 +206,36 @@ it should "behave identically (safe)" in check {
 }
 
 
-//  // Section 2.9 [Wadler] Output evaluator
-//
-//  behavior of "Monadic output eval"
-//  it should "give good result and string output" in {
-//    val r = OutputEvaluatorWithMonads.eval(answer)
-//    r.a shouldBe 42
-//    r.o shouldBe result
-//  }
-//
-//  it should "return simple result for a constant" in {
-//    val r = OutputEvaluatorWithMonads.eval(const)
-//    r.a shouldBe 42
-//    r.o shouldBe "eval(Cons(42)) <= 42\n"
-//  }
-//  it should "throw a scala exception on division by 0" in
-//  { intercept[java.lang.ArithmeticException] {
-//    OutputEvaluatorWithMonads.eval (error) } }
-//
-//
-//  behavior of "Output evaluators"
-//
-//  private def repackage (r :OutputEvaluatorWithMonads.M[Int])
-//      : OutputEvaluator.M[Int] =
-//    r match { case OutputEvaluatorWithMonads.M(o,a) => OutputEvaluator.M(o,a) }
-//
-//  it should "behave identically (safe)" in check {
-//    forAll (genSafeTerm) ( (t: Term) =>
-//      OutputEvaluator.eval (t) == repackage(OutputEvaluatorWithMonads.eval(t))
-//    )
-//  }
+// Section 2.9 [Wadler] Output evaluator
+
+behavior of "Monadic output eval"
+it should "give good result and string output" in {
+  val r = OutputEvaluatorWithMonads.eval(answer)
+  r.a shouldBe 42
+  r.o shouldBe result
+}
+
+it should "return simple result for a constant" in {
+  val r = OutputEvaluatorWithMonads.eval(const)
+  r.a shouldBe 42
+  r.o shouldBe "eval(Cons(42)) <= 42\n"
+}
+it should "throw a scala exception on division by 0" in
+{ intercept[java.lang.ArithmeticException] {
+  OutputEvaluatorWithMonads.eval (error) } }
+
+
+behavior of "Output evaluators"
+
+private def repackage (r :OutputEvaluatorWithMonads.M[Int])
+    : OutputEvaluator.M[Int] =
+  r match { case OutputEvaluatorWithMonads.M(o,a) => OutputEvaluator.M(o,a) }
+
+it should "behave identically (safe)" in check {
+  forAll (genSafeTerm) ( (t: Term) =>
+    OutputEvaluator.eval (t) == repackage(OutputEvaluatorWithMonads.eval(t))
+  )
+}
 
 
   // AW TODO: look into monadic tests in Wadler's paper (Section 3)

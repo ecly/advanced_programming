@@ -2,6 +2,10 @@
 package adpro.monads
 import scala.language.higherKinds
 
+// AUTHORS:
+// miev@itu.dk
+// ecly@itu.dk
+
 // Work through this file top down
 
 // Section 2.1 [Wadler]
@@ -79,19 +83,26 @@ object StateEvaluator {
 }
 
 // // Section 2.4 [Wadler] Variation three: Output
-//
-// object OutputEvaluator {
-//
-//   type Output = String
-//   case class M[+A] (o: Output, a: A)
-//
-//   def line (a :Term) (v :Int) :Output =
-//     "eval(" + a.toString + ") <= " + v.toString + "\n"
-//
-//   // TODO: complete the implementation of the eval function
-//   def eval (term :Term) :M[Int] = ...
-// }
-//
+
+object OutputEvaluator {
+
+ type Output = String
+ case class M[+A] (o: Output, a: A)
+
+ def line (a :Term) (v :Int) :Output =
+   "eval(" + a.toString + ") <= " + v.toString + "\n"
+
+ def eval (term :Term) :M[Int] = term match {
+    case Cons (a) => M[Int] (line(Cons(a))(a), a)
+    case Div (t,u) => {
+      val mx = eval (t)
+      val my = eval (u)
+      val res = mx.a/my.a
+      M[Int] (mx.o + my.o + line(Div(t,u))(res), res)
+    }
+ }
+}
+
 // Section 2.5 [Wadler] A monadic evaluator
 
 // The following are two generic monadic interfaces (one for classes, one for
@@ -217,30 +228,38 @@ object StateEvaluatorWithMonads {
 
 // // Section 2.9 [Wadler] Output evaluator
 //
-// object OutputEvaluatorWithMonads {
-//
-//   type Output = String
-//
-//   case class M[+A] (o: Output, a: A) {
-//
-//     // flatMap is (*) in [Wadler]
-//     // TODO: implement flatMap
-//     def flatMap[B] (k :A => M[B]) = ...
-//
-//     def map[B] (k :A => B) :M[B] = M[B] (this.o, k(this.a))
-//
-//   }
-//
-//   // TODO: implement unit
-//   object M { def unit[A] (a : A) :M[A] = ... }
-//
-//   def line (a :Term) (v :Int) :Output =
-//     "eval(" + a.toString + ") <= " + v.toString + "\n"
-//
-//   // TODO: implement eval
-//   def eval (term :Term) :M[Int] = ...
-//
-//   // Discuss in the group how the monadic evaluator with output differs from
-//   // the monadic basic one (or the one with state/counter).
-// }
+object OutputEvaluatorWithMonads {
+
+ type Output = String
+
+ case class M[+A] (o: Output, a: A) {
+
+   // flatMap is (*) in [Wadler]
+   def flatMap[B] (k :A => M[B]) = {
+     val m = k (this.a)
+     M[B] (this.o + m.o,m.a)
+   }
+
+   def map[B] (k :A => B) :M[B] = M[B] (this.o, k(this.a))
+ }
+
+ object M { def unit[A] (a : A) :M[A] = M[A]("", a) }
+
+ def out (x: Output): M[Unit] = M[Unit](x,())
+
+ def line (a :Term) (v :Int) :Output =
+   "eval(" + a.toString + ") <= " + v.toString + "\n"
+
+ def eval (term :Term) :M[Int] = term match {
+    case Cons (a) => for (u <- out(line(term)(a))) yield a
+    case Div (t,u) => for {
+      a <- eval(t)
+      b <- eval(u)
+      u <- out(line(term)(a/b))
+    } yield a/b
+ }
+
+ // Discuss in the group how the monadic evaluator with output differs from
+ // the monadic basic one (or the one with state/counter).
+}
 
