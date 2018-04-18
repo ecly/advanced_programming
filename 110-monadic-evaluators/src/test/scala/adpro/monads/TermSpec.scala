@@ -65,31 +65,31 @@ class  TermSpec extends FlatSpec with Checkers {
     )
   }
 
-//  // Section 2.2
-//
-//  behavior of "Exception eval"
-//  it should "answer Return(42) to our division [Wadler]" in
-//  { ExceptionEvaluator.eval (answer) shouldBe ExceptionEvaluator.Return(42) }
-//  it should "answer Return(42) to a constant" in
-//  { ExceptionEvaluator.eval (const) shouldBe ExceptionEvaluator.Return(42) }
-//  it should "return an exception value for a division by zero" in
-//  { ExceptionEvaluator.eval (error) shouldBe a [ExceptionEvaluator.Raise] }
-//
-//  // Section 2.3 [Wadler] Variation two: State
-//
-//  behavior of "State eval"
-//  it should "should count two divisions" in check {
-//    forAll { (n: Int) =>
-//      StateEvaluator.eval (answer).step (n) == (42,n+2) } }
-//
-//  it should "should count no divisions" in check {
-//    forAll { (n: Int) =>
-//      StateEvaluator.eval (const).step (n) == (42,n) } }
-//
-//  it should "throw a scala exception on division by 0" in
-//  { intercept[java.lang.ArithmeticException] {
-//    StateEvaluator.eval (error).step (0) } }
-//
+// Section 2.2
+
+behavior of "Exception eval"
+it should "answer Return(42) to our division [Wadler]" in
+  { ExceptionEvaluator.eval (answer) shouldBe ExceptionEvaluator.Return(42) }
+it should "answer Return(42) to a constant" in
+  { ExceptionEvaluator.eval (const) shouldBe ExceptionEvaluator.Return(42) }
+it should "return an exception value for a division by zero" in
+  { ExceptionEvaluator.eval (error) shouldBe a [ExceptionEvaluator.Raise] }
+
+// Section 2.3 [Wadler] Variation two: State
+
+behavior of "State eval"
+it should "should count two divisions" in check {
+  forAll { (n: Int) =>
+    StateEvaluator.eval (answer).step (n) == (42,n+2) } }
+
+it should "should count no divisions" in check {
+  forAll { (n: Int) =>
+    StateEvaluator.eval (const).step (n) == (42,n) } }
+
+it should "throw a scala exception on division by 0" in
+  { intercept[java.lang.ArithmeticException] {
+    StateEvaluator.eval (error).step (0) } }
+
 //  // Section 2.4 [Wadler] Variation three: Output
 //
 //  val result = "eval(Cons(1972)) <= 1972\n" +
@@ -115,98 +115,99 @@ class  TermSpec extends FlatSpec with Checkers {
 //
 //
 //
-//  // Section 2.6 [Wadler] Variation zero, revisited: The basic evaluator
-//
-//  behavior of "Basic monadic eval"
-//
-//  it should "be 42 [Wadler]" in
-//  { BasicEvaluatorWithMonads.eval (answer).a shouldBe 42 }
-//  it should "return 42 for a constant " in {
-//    BasicEvaluatorWithMonads.eval (const).a shouldBe 42 }
-//
-//  it should "throw an exception" in
-//  { intercept[java.lang.ArithmeticException]
-//  { BasicEvaluatorWithMonads.eval (error) } }
-//
-//  it should "crash on unsafe terms" in check {
-//    forAll (genUnsafeTerm) ( (t: Term) => {
-//      intercept[java.lang.ArithmeticException] {
-//      BasicEvaluatorWithMonads.eval (t).a}; true }
-//    )
-//  }
-//
-//
-//
-//  behavior of "Basic evalutors"
-//
-//  it should "behave identically" in check {
-//    forAll (genSafeTerm) ( (t: Term) =>
-//      BasicEvaluatorWithMonads.eval (t).a == BasicEvaluator.eval(t))
-//  }
-//
-//
-//  // Section 2.7 [Wadler] Variation one, revisited: Exceptions
-//
-//  behavior of "Monadic exception eval"
-//
-//  it should "be Return(42) [Wadler]" in {
-//    ExceptionEvaluatorWithMonads.eval (answer) shouldBe
-//      ExceptionEvaluatorWithMonads.Return(42)
-//  }
-//
-//  it should "return an exception on division by zero" in {
-//    (ExceptionEvaluatorWithMonads.eval (error)) shouldBe
-//      a [ExceptionEvaluatorWithMonads.Raise]
-//  }
-//
-//  def toBasic (m: ExceptionEvaluatorWithMonads.M[Int])
-//    : ExceptionEvaluator.M[Int] =  m match {
-//      case ExceptionEvaluatorWithMonads.Raise (s) => ExceptionEvaluator.Raise(s)
-//      case ExceptionEvaluatorWithMonads.Return (a) => ExceptionEvaluator.Return(a)
-//  }
-//
-//
-//
-//  behavior of "Exception evalutors"
-//
-//  it should "behave identically (safe)" in check {
-//    forAll (genSafeTerm) ( (t: Term) =>
-//      toBasic(ExceptionEvaluatorWithMonads.eval (t)) ==
-//        ExceptionEvaluator.eval(t))
-//  }
-//
-//  it should "behave identically (unsafe)" in check {
-//    forAll (genUnsafeTerm) ( (t: Term) =>
-//      toBasic(ExceptionEvaluatorWithMonads.eval (t)) ==
-//        ExceptionEvaluator.eval(t))
-//  }
-//
-//  // Section 2.8 [Wadler] Variation two, revisited: State
-//
-//  behavior of "Monadic state eval"
-//  it should "should count two divisions" in check {
-//    forAll { (n: Int) =>
-//      StateEvaluatorWithMonads.eval (answer).step (n) == (42,n+2) } }
-//
-//  it should "should count no divisions" in check {
-//    forAll { (n: Int) =>
-//      StateEvaluatorWithMonads.eval (const).step (n) == (42,n) } }
-//
-//  it should "throw a scala exception on division by 0" in
-//  { intercept[java.lang.ArithmeticException] {
-//  StateEvaluatorWithMonads.eval (error).step (0) } }
-//
-//  behavior of "State evaluators"
-//
-//  it should "behave identically (safe)" in check {
-//    forAll (genSafeTerm) ( (t: Term) =>
-//        forAll { (n: Int) =>
-//      StateEvaluator.eval (t).step(n) ==
-//        StateEvaluatorWithMonads.eval(t).step (n)
-//     })
-//  }
-//
-//
+// Section 2.6 [Wadler] Variation zero, revisited: The basic evaluator
+
+behavior of "Basic monadic eval"
+
+it should "be 42 [Wadler]" in
+  { BasicEvaluatorWithMonads.eval (answer).a shouldBe 42 }
+it should "return 42 for a constant " in {
+  BasicEvaluatorWithMonads.eval (const).a shouldBe 42 }
+
+it should "throw an exception" in
+  { intercept[java.lang.ArithmeticException]
+  { BasicEvaluatorWithMonads.eval (error) } }
+
+it should "crash on unsafe terms" in check {
+  forAll (genUnsafeTerm) ( (t: Term) => {
+    intercept[java.lang.ArithmeticException] {
+    BasicEvaluatorWithMonads.eval (t).a}; true }
+  )
+}
+
+
+
+behavior of "Basic evalutors"
+
+it should "behave identically" in check {
+  forAll (genSafeTerm) ( (t: Term) =>
+    BasicEvaluatorWithMonads.eval (t).a == BasicEvaluator.eval(t))
+}
+
+
+// Section 2.7 [Wadler] Variation one, revisited: Exceptions
+
+behavior of "Monadic exception eval"
+
+it should "be Return(42) [Wadler]" in {
+  ExceptionEvaluatorWithMonads.eval (answer) shouldBe
+    ExceptionEvaluatorWithMonads.Return(42)
+}
+
+it should "return an exception on division by zero" in {
+  (ExceptionEvaluatorWithMonads.eval (error)) shouldBe
+    a [ExceptionEvaluatorWithMonads.Raise]
+}
+
+def toBasic (m: ExceptionEvaluatorWithMonads.M[Int])
+  : ExceptionEvaluator.M[Int] =  m match {
+  case ExceptionEvaluatorWithMonads.Raise (s) => ExceptionEvaluator.Raise(s)
+  case ExceptionEvaluatorWithMonads.Return (a) => ExceptionEvaluator.Return(a)
+}
+
+
+
+behavior of "Exception evalutors"
+
+it should "behave identically (safe)" in check {
+  forAll (genSafeTerm) ( (t: Term) =>
+    toBasic(ExceptionEvaluatorWithMonads.eval (t)) ==
+      ExceptionEvaluator.eval(t))
+}
+
+it should "behave identically (unsafe)" in check {
+  forAll (genUnsafeTerm) ( (t: Term) =>
+    toBasic(ExceptionEvaluatorWithMonads.eval (t)) ==
+      ExceptionEvaluator.eval(t))
+}
+
+// Section 2.8 [Wadler] Variation two, revisited: State
+
+behavior of "Monadic state eval"
+  it should "should count two divisions" in check {
+    forAll { (n: Int) =>
+      StateEvaluatorWithMonads.eval (answer).step (n) == (42,n+2) } }
+
+it should "should count no divisions" in check {
+  forAll { (n: Int) =>
+    StateEvaluatorWithMonads.eval (const).step (n) == (42,n) } }
+
+it should "throw a scala exception on division by 0" in
+  { intercept[java.lang.ArithmeticException] {
+  StateEvaluatorWithMonads.eval (error).step (0) } }
+
+behavior of "State evaluators"
+
+it should "behave identically (safe)" in check {
+  forAll (genSafeTerm) ( (t: Term) =>
+    forAll { (n: Int) =>
+      StateEvaluator.eval (t).step(n) ==
+        StateEvaluatorWithMonads.eval(t).step (n)
+    }
+  )
+}
+
+
 //  // Section 2.9 [Wadler] Output evaluator
 //
 //  behavior of "Monadic output eval"
