@@ -31,8 +31,8 @@ class LensesSpec extends FlatSpec with Checkers {
   // Write the laws polymorphically for *any* total lens and instantiate it for
   // concrete lenses.
 
-  // def PutGet[C,A] (l: Lens[C,A])
-  //   (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = TODO
+  def PutGet[C,A] (l: Lens[C,A])
+     (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = ???
 
   // def GetPut[C,A] ... TODO
 
