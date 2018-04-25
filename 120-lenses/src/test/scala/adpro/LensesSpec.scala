@@ -32,7 +32,7 @@ class LensesSpec extends FlatSpec with Checkers {
   // concrete lenses.
 
   def PutGet[C,A] (l: Lens[C,A])
-     (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = ???
+    (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = ???
 
   // def GetPut[C,A] ... TODO
 
@@ -57,6 +57,12 @@ class LensesSpec extends FlatSpec with Checkers {
   // "l2" should behave like wellBehavedTotalLense (l2) // will fail PutGet see p. 6
   // "l3" should behave like wellBehavedTotalLense (l3)
   // // it should behave like veryWellBehavedTotalLense (l3)
+
+  // The four codiag lines ufnortunately do not work with scalacheck 0.14
+  // scalatest 3.0.5 and monocole 1.5 + scala 2.12.4.  It appears that this is
+  // due to compilation against various versions of prior components (it
+  // produces a JVM linking error).  We need to wait until they recompile all
+  // the libraries correctly.
 
   // "codiag[Int]" should behave like veryWellBehavedTotalLense (codiag[Int])
   // "codiag[String]" should behave like veryWellBehavedTotalLense (codiag[String])
