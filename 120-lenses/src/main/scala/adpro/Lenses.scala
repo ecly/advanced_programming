@@ -42,6 +42,11 @@ import monocle.PLens._
 import monocle.std.map._
 import monocle.syntax._
 import monocle.function._
+import monocle.function.Index._
+import monocle.function.FilterIndex._
+import monocle.function.Each._
+import monocle.std.map._
+
 
 object Lenses {
 
