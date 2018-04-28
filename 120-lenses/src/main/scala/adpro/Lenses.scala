@@ -262,8 +262,8 @@ object Lenses {
   // get: List[A] => Option[A]
   // set: A => List[A] => List[A]
   //
-  // def setIth[A] (n: Integer) :Optional[List[A],A] = ... (1-2 lines)
-
+  def setIth[A] (n: Integer) =
+    Optional[List[A],A] (_.lift(n)) (s => l => if (n >= l.length) l else l.updated(n,s))
 
 
   // In the above you will need to decide what to do with the setter if n is
@@ -272,9 +272,18 @@ object Lenses {
   // element, and extend the list approprietly. In such case we obtain a total
   // lense. Try this too:
 
-  // def setIth1[A] (n: Integer, default: A) :Lens[List[A],A] = .. TODO ca. 12 lines
-
-
+  def setIth1[A] (n: Integer, default:A) : Optional[List[A],A] = {
+    def get (l: List[A]) : Option[A] = if (n < l.length) Some(l(n)) else None
+    def set (s:A) (l:List[A]) : List[A] = {
+      if (n < l.length) {
+        l.updated(n,s)
+      } else {
+        val extension = List.fill(n - l.length + 1)(default)
+        (l ++ extension).updated(n,s)
+      }
+    }
+    Optional[List[A],A] (get) (set)
+  }
 
   // Exercise 9. To test setIth (above) you will also need to implement new
   // PutGet, GetPut and PutPut laws that work for Optionals. Add the tests to
@@ -292,11 +301,8 @@ object Lenses {
   // For a simple example, use sethIth below to increment the third element on a
   // list list0
 
-  // val list0 = List[Int](1,2,3,4,5,6)
-  // val list1 = ... TODO
-  // println (list0)
-  // println (list1)
-
+  val list0 = List[Int](1,2,3,4,5,6)
+  val list1 = setIth(2).set(4)(list0)
+  println (list0)
+  println (list1)
 }
-
-

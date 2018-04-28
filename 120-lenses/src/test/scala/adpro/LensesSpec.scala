@@ -110,29 +110,78 @@ class LensesSpec extends FlatSpec with Checkers {
   // complicates implementations of Optionals. Consequently, the members of
   // Optionals l are l.getOption and l.set (unlike for lenses, where these where
   // l.get and l.set).
+  //
 
-  // def PartialPutGet[C,A] (l: Optional[C,A]) = ...
+  def PartialPutGet[C,A] (l: Optional[C,A])
+    (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = forAll {
+      (c:C, a:A) => {
+        val res = l.getOption(l.set(a)(c))
+        res == Some(a) || res == None
+      }
+  }
 
-  // def PartialGetPut[C,A] = ...
+  // (implicit aC: Arbitrary[C]): Prop = forAll {
+  def PartialGetPut[C,A] (l: Optional[C,A])
+    (implicit aC: Arbitrary[C]) :Prop = forAll {
+      (c:C) => {
+        l.getOption(c) match {
+          case Some(x) => l.set(x)(c) == c
+          // not entirely true what this case should be?
+          // l.set(None)(c) does not compile
+          case None => true
+        }
+      }
+  }
 
-  // def PartialPutPut[C,A] = ...
+  // (implicit aA: Arbitrary[A], aC: Arbitrary[C]): Prop = forAll {
+  def PartialPutPut[C,A] (l: Optional[C,A])
+    (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = forAll {
+    (c:C, a1:A, a2:A) => l.set(a1)(l.set(a2)(c)) == l.set(a1)(c)
+  }
 
   // specification of Optional laws (uncomment)
   //
-  // def wellBehavedPartialLense[A,C] (l: Optional[C,A])
-  //   (implicit ac: Arbitrary[C], aa: Arbitrary[A]) = {
-  //   it should "obey the PartialPutGet law" in check { PartialPutGet (l) }
-  //   it should "obey the PartialGetPut law" in check { PartialGetPut (l) }
-  // }
+  def wellBehavedPartialLense[A,C] (l: Optional[C,A])
+    (implicit ac: Arbitrary[C], aa: Arbitrary[A]) = {
+    it should "obey the PartialPutGet law" in check { PartialPutGet (l) }
+    it should "obey the PartialGetPut law" in check { PartialGetPut (l) }
+  }
 
-  // def veryWellBehavedPartialLense[A,C] (l: Optional[C,A])
-  //   (implicit aC: Arbitrary[C], aA: Arbitrary[A]) = {
-  //     it should behave like wellBehavedPartialLense (l)
-  //     it should "obey the PartialPutPut law" in check { PartialPutPut (l) }
-  // }
+  def veryWellBehavedPartialLense[A,C] (l: Optional[C,A])
+    (implicit aC: Arbitrary[C], aA: Arbitrary[A]) = {
+      it should behave like wellBehavedPartialLense (l)
+      it should "obey the PartialPutPut law" in check { PartialPutPut (l) }
+  }
 
-  //  "setIth" should behave like veryWellBehavedPartialLense (setIth[Int](5))
-  //  "setIth1" should behave like veryWellBehavedTotalLense (setIth1[Int](5,-1)) // fails GetPut as expected
+  "setIth" should behave like veryWellBehavedPartialLense (setIth[Int](5))
+
+  def TotalPutGet[C,A] (l: Optional[C,A])
+    (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = forAll {
+      (c:C, a:A) => l.getOption(l.set(a)(c)) == Some(a)
+  }
+
+  def TotalGetPut[C,A] (l: Optional[C,A])
+    (implicit aC: Arbitrary[C]) :Prop = forAll {
+      (c:C) =>  {
+      l.getOption(c) match {
+          case Some(x) => l.set(x)(c) == c
+          case None => true
+        }
+      }
+    }
+
+  def TotalPutPut[C,A] (l: Optional[C,A])
+    (implicit aA: Arbitrary[A], aC: Arbitrary[C]) :Prop = forAll {
+    (c:C, a1:A, a2:A) => l.set(a1)(l.set(a2)(c)) == l.set(a1)(c)
+  }
+
+  def veryWellBehavedTotalLense[A,C] (l: Optional[C,A])
+    (implicit aC: Arbitrary[C], aA: Arbitrary[A]) = {
+      it should "obey the PartialPutGet law" in check { TotalPutGet (l) }
+      it should "obey the PartialGetPut law" in check { TotalGetPut (l) }
+      it should "obey the PartialPutPut law" in check { TotalPutPut (l) }
+    }
+  "setIth1" should behave like veryWellBehavedTotalLense (setIth1[Int](5,-1)) // fails GetPut as expected
 }
 
 
