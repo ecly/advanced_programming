@@ -22,9 +22,6 @@ import scalaz.scalacheck.ScalazArbitrary._
 
 import adpro.Lenses._
 
-
-
-
 class LensesSpec extends FlatSpec with Checkers {
 
   // Exercise 1.
@@ -64,7 +61,7 @@ class LensesSpec extends FlatSpec with Checkers {
   // "l1" should behave like wellBehavedTotalLense (l1) // will fail GetPut see p. 6
   // "l2" should behave like wellBehavedTotalLense (l2) // will fail PutGet see p. 6
   "l3" should behave like wellBehavedTotalLense (l3)
-  // // it should behave like veryWellBehavedTotalLense (l3)
+  // it should behave like veryWellBehavedTotalLense (l3)
 
   // The four codiag lines ufnortunately do not work with scalacheck 0.14
   // scalatest 3.0.5 and monocole 1.5 + scala 2.12.4.  It appears that this is
@@ -81,25 +78,24 @@ class LensesSpec extends FlatSpec with Checkers {
 
   // Tests for Exercise 4 (uncomment)
 
-  // "itu" should "show Alex at zipcode 2800" in
-  // { assertResult(itu.students("Alex").zipcode) ("2800") }
+  "itu" should "show Alex at zipcode 2800" in
+  { assertResult(itu.students("Alex").zipcode) ("2800") }
 
-  // "itu1" should "show Alex at zipcode 9100" in
-  // { assertResult(itu1.students("Alex").zipcode) ("9100") }
-
+  "itu1" should "show Alex at zipcode 9100" in
+  { assertResult(itu1.students("Alex").zipcode) ("9100") }
 
 
   // Test for Exercise 5 (uncomment as needed)
 
-  // "itu2" should "show Alex at zipcode 9100" in
-  // { assertResult(itu2.students("Alex").zipcode) ("9100") }
+  "itu2" should "show Alex at zipcode 9100" in
+  { assertResult(itu2.students("Alex").zipcode) ("9100") }
 
 
 
   // Test for Exercise 6 (uncomment as needed)
 
-  // "itu3" should "have all the countries in upper case" in
-  // { assert (itu3.students.values.map(_.country).forall (s => s.toUpperCase == s)) }
+  "itu3" should "have all the countries in upper case" in
+  { assert (itu3.students.values.map(_.country).forall (s => s.toUpperCase == s)) }
 
 
 

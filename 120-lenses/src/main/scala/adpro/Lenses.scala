@@ -89,6 +89,9 @@ object Lenses {
   // def codiag[A]: Lens[A \/ A, A] = ... TODO (ca 10-15 lines)
   //
   // Some codiag tests are found in LensesSpec.  Test your solution.
+  //
+  // Intentionally left blank as I really could not get anything to work here,
+  // trying to 'copy' the implementation from Morris.
 
   // Exercise 3: Section 5.3 of [Morris  2012] describes a choice combinator for
   // lenseis |||: Lens[R, F] => Lens[S, F] => Lens[Either[R, S], F].
@@ -139,7 +142,11 @@ object Lenses {
   // the copy.  For instance itu.copy (students = itu.students.tail) creates a
   // copy of ITU without the first student.
 
-  // val itu1 = ... TODO
+  val itu1 = itu.copy(
+    students = itu.students + ("Alex" -> itu.students("Alex").copy(
+      zipcode = "9100")
+    )
+  )
 
   // There is a test in LensesSpec to check whether  you did what expected.
   //
@@ -147,22 +154,21 @@ object Lenses {
   // nested properties in complex objects is much easier in imperative
   // programming.
 
-
-
   // Exercise 5.  Lenses to the rescue.  Try to extend our hypothetical
   // university library with lenses, so that using the types is almost as
   // natural as in imperative languages.
   //
   // a) design a lense that accesses zipcode from Address objects:
 
-  // val _zipcode: Lens[Address, ZipCode] = ... TODO (1-2 lines)
+  val _zipcode =
+    Lens[Address, ZipCode] (_.zipcode) (z => a => a.copy(zipcode = z))
 
   // b) design a lense that accesses the students collection from university:
 
-  // val _students: Lens[University, Students] = ... TODO (1-2 lines)
+  val _students =
+    Lens[University, Students] (_.students) (s => u => u.copy(students = s))
 
   // c) Use the following index lense (name)  from Monocle:
-  //
   // index(name) :Optional[Map[String,Address],Address]
   //
   // This lens focuses our view on the entry in a map with a given index.
@@ -173,7 +179,8 @@ object Lenses {
   // way (use the infix binary operator ^|-? to compose a lense with an
   // optional, and use ^|-> to compose the optional with a lense).
 
-  // val itu2 :University = ... TODO (1-2) lines
+  val itu2 :University =
+    (_students ^|-? index("Alex") ^|-> _zipcode).set("9100")(itu)
 
   // There is a test in LensesSpec to test whether what you have built behaves
   // as expected.
@@ -182,7 +189,6 @@ object Lenses {
   // structures becomes more readable and easier to write.  In fact, lense
   // libraries provide various mechanisms to generate them for the properties of
   // your case classess, so this access can come at almost no (coding) cost.
-
 
   // Exercise 6. We shall now turn upper case names of all countries in all the
   // addresses of all students in the itu object.
@@ -220,9 +226,11 @@ object Lenses {
   // - a lense that extract the country from an address object (_country, you
   // will need to write that one, as we did not create it yet).
 
-  //  val _country :Lens[Address,String] = TODO (1 line)
-  //
-  //  val itu3 :University = ... TODO (1 line)
+  val _country =
+    Lens[Address, String] (_.country) (c => a => a.copy(country = c))
+
+  val itu3 :University =
+    (_students ^|->> each ^|-> _country).modify(_.toUpperCase)(itu)
 
   // LensesSpec.scala has a test to see if you succeeded.
   //
@@ -231,10 +239,9 @@ object Lenses {
   // between the code in the test and the code above that influences this? Write
   // the answer below:
   //
-  // ... ... ...
-
-
-
+  // For starters, the test code does no modification, merely checks that
+  // everything is uppcase. But more importantly, the style of the test code
+  // would not pass the modified map back down into the nested structure.
 
   // Exercise 7. Use filterIndex(p) to only capitalize city names of the
   // students on the list whose name satisfies predicate (p). Let's capitalize
@@ -242,10 +249,9 @@ object Lenses {
   // combinator is a traversal, like 'each' above. Recall that ^|->> is used to
   // compose (append) a traversal and ^|-> is used to append a lense.
 
-  // val itu4 = ... ca. 3 lines TODO
-
-  // println (itu4) [cheap testing]
-
+  val itu4 =
+    (_students ^|->> filterIndex((_:String)(0) == 'A') ^|-> _country).modify(_.toUpperCase)(itu)
+  println (itu4)
 
   // Exercise 8.  We are returning to construction of basic lenses.  Implement a
   // (partial) lens that accesses ith element of a list (let's call it index).
