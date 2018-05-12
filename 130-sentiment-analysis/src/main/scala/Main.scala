@@ -12,6 +12,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.apache.spark.sql._
 
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.SparkContext
 
 object Main {
 
@@ -23,6 +25,8 @@ object Main {
   org.apache.log4j.Logger getLogger "akka" setLevel (org.apache.log4j.Level.WARN)
   val spark =  SparkSession.builder
     .appName ("Sentiment")
+    .config("spark.network.timeout", "20000s")
+    .config("spark.executor.heartbeatInterval", "10000s")
     .master  ("local[9]")
     .getOrCreate
 
@@ -88,12 +92,19 @@ object Main {
 
     def trainPerceptron(train : Dataset[Row], inputSize : Integer) = {
       new MultilayerPerceptronClassifier()
-        .setLayers(Array[Int](inputSize, 3, 3, 1))
+        .setLayers(Array[Int](inputSize, 4, 5, 4))
         .setBlockSize(128)
         .setSeed(1234L)
         .setMaxIter(100)
         .fit(train)
     }
+
+    // def main(args: Array[String]) = {
+    //   val sc = spark.sparkContext
+    //   val data = MLUtils.loadLibSVMFile(sc, "sparktest.txt").toDF()
+    //   val feature = data.first match {case Row(_, f) => f}
+    //   println(feature)
+    // }
 
     def main(args: Array[String]) = {
       val glove  = loadGlove ("glove.txt")
@@ -101,10 +112,16 @@ object Main {
       val dataset = prepareDataForTraining(reviews, glove)
       val datasets = dataset.randomSplit(Array(0.1, 0.9))
       val test = datasets(0)
+      test.show
       val train = datasets(1)
+      train.show
       val inputSize = glove.first match { case (_, v) => v.length }
       val model = trainPerceptron(train, inputSize)
-      // embedded.groupBy('id, 'overall).agg(array("vec")).show
+      val result = model.transform(test)
+      val predictionAndLabels = result.select("prediction", "label")
+      //supported evaluators: "f1" (default), "weightedPrecision", "weightedRecall", "accuracy"
+      val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
+      println("Precision:" + evaluator.evaluate(predictionAndLabels))
       spark.stop
     }
 }
