@@ -1,9 +1,12 @@
-// Advanced Programming. Andrzej Wasowski. IT University
-// To execute this example, run "sbt run" or "sbt test" in the root dir of the project
-// Spark needs not to be installed (sbt takes care of it)
+// AUTHORS:
+// miev@itu.dk
+// ecly@itu.dk
+
 import org.apache.spark.ml.linalg.Vectors
+import org.apache.spark.ml.Transformer
 import scala.collection.mutable.WrappedArray
-import org.apache.spark.ml.feature.Tokenizer
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.tuning.{ParamGridBuilder, CrossValidator}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
 import org.apache.spark.sql.functions._
@@ -11,9 +14,6 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.apache.spark.sql._
-
-import org.apache.spark.mllib.util.MLUtils
-import org.apache.spark.SparkContext
 
 object Main {
 
@@ -67,7 +67,7 @@ object Main {
         .as[Embedding]
     }
 
-    def ratingToLabel(d : Double) = if (d < 2.5) 1 else if (d < 3.5) 2 else 3
+    def ratingToLabel(d : Double) = if (d < 2.5) 0 else if (d < 3.5) 1 else 2
 
     def prepareDataForTraining(reviews : Dataset[ParsedReview], glove : Dataset[Embedding]) = {
       val words = reviews.select('id, 'overall, explode(split('text, " ")).as("word"))
@@ -77,51 +77,66 @@ object Main {
       }
       val reduced = pairRdd.reduceByKey {
         case ((v1:WrappedArray[_], n1),(v2:WrappedArray[_], n2)) =>
-          (v1.zip(v2).map {
-            case ((a:Double,b:Double)) => a+b
-          }, n1+n2)
+          (v1.zip(v2).map { case ((a:Double,b:Double)) => a+b }, n1+n2)
       }
 
       reduced.map {
         case ((id:Int, overall:Double), (vec:WrappedArray[Double], n:Int))
-        => (ratingToLabel(overall), Vectors.dense(vec.map((x:Double) => x/n).toArray))
+          => (ratingToLabel(overall), Vectors.dense(vec.map((x:Double) => x/n).toArray))
       }.toDS
         .withColumnRenamed ("_1", "label" )
         .withColumnRenamed ("_2", "features")
     }
 
-    def trainPerceptron(train : Dataset[Row], inputSize : Integer) = {
+    // Create simply MultilayerPerceptronClassifier with a somewhat
+    // arbitrary selection of hidden layer.
+    def perceptronClassifier(inputSize : Integer) = {
       new MultilayerPerceptronClassifier()
-        .setLayers(Array[Int](inputSize, 4, 5, 4))
+        .setLayers(Array[Int](inputSize, 4, 5, 3))
         .setBlockSize(128)
         .setSeed(1234L)
         .setMaxIter(100)
-        .fit(train)
     }
 
-    // def main(args: Array[String]) = {
-    //   val sc = spark.sparkContext
-    //   val data = MLUtils.loadLibSVMFile(sc, "sparktest.txt").toDF()
-    //   val feature = data.first match {case Row(_, f) => f}
-    //   println(feature)
-    // }
+    // Supports: "f1", "weightedPrecision", "weightedRecall", "accuracy"
+    val evaluatorF1 = new MulticlassClassificationEvaluator().setMetricName("f1")
+    def evaluateF1(model : Transformer, testSet : Dataset[_]) = {
+      val result = model.transform(testSet)
+      val predictionAndLabels = result.select("prediction", "label")
+      evaluatorF1.evaluate(predictionAndLabels)
+    }
+
+    def evaluatePerceptronBasic(dataset : Dataset[_], inputSize : Int) = {
+      val datasets = dataset.randomSplit(Array(0.9, 0.1))
+      val classifier = perceptronClassifier(inputSize)
+      val model = classifier.fit(datasets(0))
+      evaluateF1(model, datasets(1))
+    }
+
+    // Adapted from CrossValidationExample from sparks official GitHub repo.
+    def evaluatePerceptronKFoldCV(dataset : Dataset[_], inputSize : Int, k : Int) = {
+        val datasets = dataset.randomSplit(Array(0.9, 0.1))
+        val classifier = perceptronClassifier(inputSize)
+        val pipeline = new Pipeline().setStages(Array(classifier))
+        val paramGrid = new ParamGridBuilder().build()
+        val cv = new CrossValidator()
+          .setEstimator(pipeline)
+          .setEvaluator(evaluatorF1)
+          .setEstimatorParamMaps(paramGrid)
+          .setNumFolds(k)
+        val model = cv.fit(datasets(0))
+        evaluateF1(model, datasets(1))
+      }
 
     def main(args: Array[String]) = {
       val glove  = loadGlove ("glove.txt")
+      val inputSize = glove.first match { case (_, v) => v.length }
       val reviews = loadReviews ("musical_instruments.json")
       val dataset = prepareDataForTraining(reviews, glove)
-      val datasets = dataset.randomSplit(Array(0.1, 0.9))
-      val test = datasets(0)
-      test.show
-      val train = datasets(1)
-      train.show
-      val inputSize = glove.first match { case (_, v) => v.length }
-      val model = trainPerceptron(train, inputSize)
-      val result = model.transform(test)
-      val predictionAndLabels = result.select("prediction", "label")
-      //supported evaluators: "f1" (default), "weightedPrecision", "weightedRecall", "accuracy"
-      val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
-      println("Precision:" + evaluator.evaluate(predictionAndLabels))
+      val basicF1 = evaluatePerceptronBasic(dataset, inputSize)
+      val crossF1 = evaluatePerceptronKFoldCV(dataset, inputSize, 10)
+      println("F1-score-basic:" + basicF1)
+      println("F1-score-10fold-CV:" + crossF1)
       spark.stop
     }
 }
