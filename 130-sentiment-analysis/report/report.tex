@@ -1,0 +1,56 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{eurosym}
+\usepackage{fancyhdr}
+\usepackage{natbib}
+\bibliographystyle{abbrvnat}
+\setcitestyle{authoryear}
+
+\linespread{1.3}
+\lhead{miev \& ecly}
+\chead{Mini Project 2}
+\rhead{\today}
+\pagestyle{fancy}
+
+\title{Advanced Programming -{} Mini Project 2}
+\author{Michael Erik Vesterli -{} miev@itu.dk\\
+Emil Christian Lynegaard -{} ecly@itu.dk
+}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+The goal of this project is to utilize a combination of the glove word-vector dataset \citep{glove}, and a data set consisting of amazon product reviews \citep{amazon}, to train a classifier to predict the accompanying star-rating of a amazon product review based on the review comment. Specifically, we will use the Perceptron algorithm\citep{perceptron}, to train a classifier on a training data set, which will then be evaluated on a corresponding test data set.
+
+\section{Testing}
+For testing we have used a set of 10,261 reviews related to Musical Instruments from \cite{amazon}. Due to time restriction, we only managed to run the classifier using a limited set of parameters. Our implementation and results use a neural network layout consisting of 2 hidden layers with 4 and 5 nodes respectively. Furthermore we have only tested it using 100 iterations. Despite the small size of the neural network, our tests still yield very promising results as discussed in section \ref{sec:results}.
+
+\section{Results}\label{sec:results}
+We have tested the perceptron classifier using a basic 0.9/0.1 training/testing data distribution and using 10-fold cross validation on a similar distribution. As shown in table \ref{result_table}, the two varying testing methods yield very similar results, which is somewhat expected, as the 10-fold cross validation uses the best model out of the 10 trained ones. Interestingly, this means that the best model returning by the cross validator, is capable of yielding similar results to a model trained on 9 times the data it was trained on.
+
+By inspecting the average performance of all the models trained by Spark's Cross Validator, we see that the average performance of all the models, was within 1\% of the best model, indicating that 10\% of the total data is generally sufficient to achieve the results reported in table \ref{result_table}.
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{cpu time} & \textbf{clock time} & \textbf{f1-basic} & \textbf{f1-10fold-cv} \\ \hline
+1            & 3811.58s          & 652.41s             & 0.8241            & 0.8212                \\ \hline
+2            & 3741.26s          & 587.82s             & 0.8381            & 0.8115                \\ \hline
+3            & 3444.61s          & 523.59s             & 0.8115            & 0.8262                \\ \hline
+\end{tabular}
+\caption{Result of running the program 3 times on a 4-physical, 8-logical core machine.}
+\label{result_table}
+\end{table}
+
+From the results presented in table \ref{result_table}, it is clear that using Spark's machine learning libraries offer a very high degree of parallelization, as we see CPU times around 5-6 times as large as clock times.
+
+
+\section{Conclusion}
+Based on the results found in this report, the Perceptron algorithm in combination has shown to be a powerful combination, in managing to efficiently train a neural network to yield very promising results on somewhat limited amounts of data.
+\clearpage
+\bibliography{references.bib}
+\end{document}
